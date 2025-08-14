@@ -1,11 +1,11 @@
-function startCountdown(targetDate) {
-    const timer = setInterval(() => {
+function startCountdown(targetDate, elementId) {
+    function updateCountdown() {
         const now = new Date().getTime();
         const distance = targetDate - now;
 
         if (distance < 0) {
-            clearInterval(timer);
-            console.log("Countdown finished!");
+            document.getElementById(elementId).innerHTML = "it's TIME!";
+            clearInterval(interval);
             return;
         }
 
@@ -14,8 +14,14 @@ function startCountdown(targetDate) {
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        console.log(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-    }, 1000);
+        document.getElementById(elementId).innerHTML =
+            `${days}д ${hours}ч ${minutes}м ${seconds}с`;
+    }
+
+    updateCountdown(); // 
+    const interval = setInterval(updateCountdown, 1000);
 }
 
-startCountdown(new Date("2025-12-31 23:59:59").getTime());
+// Пример: запуск таймера до конца года
+const newYear = new Date("2025-12-31T23:59:59").getTime();
+startCountdown(newYear, "countdown");
