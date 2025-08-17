@@ -1,19 +1,30 @@
 // widget.js (для прямого подключения через <script>)
 
-// Предположим, defaultConfig отдельно подключён или объявим здесь
 var defaultConfig = {
+  locale: 'en-GB',
   target: null,
-  autoStart: false,
-  doneText: 'Completed',
+  autoStart: true,
+  doneText: 'Event started!',
   labels: {
     days: 'Days',
     hours: 'Hours',
     minutes: 'Minutes',
     seconds: 'Seconds'
-  }
+  },
+  showControls: true,
+  titleSet: 'Event is set',
+  titleUnset: 'Set event date'
 };
 
 (function(window, document) {
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  
+  function toLocalInputValue(value) {
+    if (!value) return '';
+    const d = new Date(value);
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
 
   function CountdownWidget(element, options) {
     this.element = element;
@@ -31,95 +42,118 @@ var defaultConfig = {
   };
 
   CountdownWidget.prototype.render = function() {
-    this.element.innerHTML = `
-      <div class="countdown-controls">
-        <input type="datetime-local" class="countdown-input">
-        <button class="countdown-button" data-action="set">Set Event</button>
+    const c = this.config;
+    
+    const controls = c.showControls !== false ? `
+      <div class="countdown-header">
+        <h1 class="countdown-main-title">🕒 Countdown Timer</h1>
+        <div class="countdown-controls">
+          <input type="datetime-local" class="countdown-input" placeholder="Select date and time">
+          <button class="countdown-button" data-action="set">Set Event</button>
+        </div>
       </div>
+    ` : '';
+
+    this.element.innerHTML = `
+      ${controls}
       <div class="countdown-widget">
         <div class="countdown-digit">
           <div class="countdown-number" data-unit="days">00</div>
-          <div class="countdown-label">${this.config.labels.days}</div>
+          <div class="countdown-label">${c.labels.days}</div>
         </div>
         <div class="countdown-digit">
           <div class="countdown-number" data-unit="hours">00</div>
-          <div class="countdown-label">${this.config.labels.hours}</div>
+          <div class="countdown-label">${c.labels.hours}</div>
         </div>
         <div class="countdown-digit">
           <div class="countdown-number" data-unit="minutes">00</div>
-          <div class="countdown-label">${this.config.labels.minutes}</div>
+          <div class="countdown-label">${c.labels.minutes}</div>
         </div>
         <div class="countdown-digit">
           <div class="countdown-number" data-unit="seconds">00</div>
-          <div class="countdown-label">${this.config.labels.seconds}</div>
+          <div class="countdown-label">${c.labels.seconds}</div>
         </div>
       </div>
-      <div class="countdown-title" style="text-align:center; margin-top:16px; font-weight:500;">
-        ${this.config.target ? 'Event is set' : 'Please set event date'}
+      <div class="countdown-status">
+        ${c.target ? c.titleSet : c.titleUnset}
       </div>
     `;
+
+    const input = this.element.querySelector('.countdown-input');
+    if (input && c.target) input.value = toLocalInputValue(c.target);
   };
 
   CountdownWidget.prototype.bindEvents = function() {
-    var button = this.element.querySelector('[data-action="set"]');
-    var input = this.element.querySelector('.countdown-input');
-    var self = this;
+    const button = this.element.querySelector('[data-action="set"]');
+    const input = this.element.querySelector('.countdown-input');
+    const self = this;
 
-    button.addEventListener('click', function() {
-      var date = input.value;
-      if (date) {
-        self.setTarget(date);
-        self.start();
-      } else {
-        alert('Please choose a date');
-      }
-    });
+    if (button && input) {
+      button.addEventListener('click', function() {
+        const date = input.value;
+        if (date) {
+          self.setTarget(date);
+          self.start();
+        } else {
+          alert('Please choose a date and time');
+        }
+      });
+    }
   };
 
   CountdownWidget.prototype.setTarget = function(target) {
     this.config.target = target;
-    var title = this.element.querySelector('.countdown-title');
-    title.textContent = 'Event: ' + new Date(target).toLocaleString('en');
+    const status = this.element.querySelector('.countdown-status');
+    if (status) {
+      const locale = this.config.locale || 'en-GB';
+      const targetDate = new Date(target);
+      status.textContent = 'Event: ' + targetDate.toLocaleString(locale, {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+    }
   };
 
   CountdownWidget.prototype.start = function() {
-    var self = this;
-
     if (this.timer) clearInterval(this.timer);
-
-    var targetTime = new Date(this.config.target).getTime();
+    const targetTime = new Date(this.config.target).getTime();
+    const self = this;
 
     this.timer = setInterval(function() {
-      var now = Date.now();
-      var distance = targetTime - now;
+      const now = Date.now();
+      const distance = targetTime - now;
 
-      if (distance < 0) {
+      if (distance <= 0) {
         self.complete();
         return;
       }
 
-      var days = Math.floor(distance / (1000*60*60*24));
-      var hours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
-      var minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
-      var seconds = Math.floor((distance % (1000*60)) / 1000);
+      const days = Math.floor(distance / 86400000);
+      const hours = Math.floor((distance % 86400000) / 3600000);
+      const minutes = Math.floor((distance % 3600000) / 60000);
+      const seconds = Math.floor((distance % 60000) / 1000);
 
-      self.updateDisplay({days, hours, minutes, seconds});
+      self.updateDisplay({ days, hours, minutes, seconds });
     }, 1000);
   };
 
   CountdownWidget.prototype.updateDisplay = function(t) {
-    function pad(n) { return String(n).padStart(2,'0'); }
-
-    this.element.querySelector('[data-unit="days"]').textContent = pad(t.days);
-    this.element.querySelector('[data-unit="hours"]').textContent = pad(t.hours);
-    this.element.querySelector('[data-unit="minutes"]').textContent = pad(t.minutes);
-    this.element.querySelector('[data-unit="seconds"]').textContent = pad(t.seconds);
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    this.element.querySelector('[data-unit="days"]').textContent = pad2(t.days);
+    this.element.querySelector('[data-unit="hours"]').textContent = pad2(t.hours);
+    this.element.querySelector('[data-unit="minutes"]').textContent = pad2(t.minutes);
+    this.element.querySelector('[data-unit="seconds"]').textContent = pad2(t.seconds);
   };
 
   CountdownWidget.prototype.complete = function() {
-    clearInterval(this.timer);
-    this.element.querySelector('.countdown-title').textContent = this.config.doneText || 'Completed';
-    this.updateDisplay({days:0,hours:0,minutes:0,seconds:0});
+    if (this.timer) clearInterval(this.timer);
+    const status = this.element.querySelector('.countdown-status');
+    if (status) status.textContent = this.config.doneText || 'Event started!';
+    this.updateDisplay({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   };
 
   CountdownWidget.prototype.destroy = function() {
@@ -127,20 +161,17 @@ var defaultConfig = {
   };
 
   function init(selector, options) {
-    var elements = typeof selector === 'string' ? document.querySelectorAll(selector) : [selector];
+    const elements = typeof selector === 'string' ? document.querySelectorAll(selector) : [selector];
     return Array.from(elements).map(function(el) { return new CountdownWidget(el, options); });
   }
 
-  // Автоинициализация
   document.addEventListener('DOMContentLoaded', function() {
-    var elements = document.querySelectorAll('[data-widget="countdown"]');
-    elements.forEach(function(el) {
-      var options = el.dataset.options ? JSON.parse(el.dataset.options) : {};
+    document.querySelectorAll('[data-widget="countdown"]').forEach(function(el) {
+      const options = el.dataset.options ? JSON.parse(el.dataset.options) : {};
       new CountdownWidget(el, options);
     });
   });
 
-  // Глобальный объект
   window.CountdownWidget = {
     CountdownWidget: CountdownWidget,
     init: init
