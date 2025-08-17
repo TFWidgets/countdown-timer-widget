@@ -29,21 +29,24 @@
     <div class="demo-container">
         <h1>Countdown Timer Widget</h1>
         
+        <!-- Автоинициализация через data-widget -->
         <div class="timer-section">
             <h3>Auto initialization</h3>
             <div data-widget="countdown" data-options='{"target":"2025-12-31T23:59:59", "labels":{"days":"Days","hours":"Hours","minutes":"Minutes","seconds":"Seconds"}, "doneText":"Completed"}'></div>
         </div>
         
+        <!-- Программная инициализация -->
         <div class="timer-section">
             <h3>Programmatic initialization</h3>
             <div id="countdown-widget"></div>
         </div>
     </div>
 
+    <!-- Подключаем JS без модулей -->
     <script src="./dist/widget.min.js"></script>
     <script>
-        // Programmatic initialization
-        CountdownWidget.init('#countdown-widget', {
+        // Программная инициализация через глобальный объект
+        window.CountdownWidget.init('#countdown-widget', {
             target: '2025-06-01T12:00:00',
             labels: {
                 days: 'Days',
