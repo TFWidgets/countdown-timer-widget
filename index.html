@@ -3,45 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Countdown Timer Widget - Event Countdown</title>
-    <meta name="description" content="Beautiful countdown timer widget for events. Perfect for launches, sales, and special occasions in Europe.">
-    <link rel="stylesheet" href="./dist/widget.min.css">
+    <title>🕒 Countdown Timer</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        
-        .demo-container {
+
+        .countdown-container {
             background: white;
-            padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .footer {
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             text-align: center;
-            margin-top: 40px;
-            color: #6b7280;
-            font-size: 14px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .datetime-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .datetime-input {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: white;
+            color: #2d3748;
+            min-width: 220px;
+            transition: all 0.3s ease;
+        }
+
+        .datetime-input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .set-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .set-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(66, 153, 225, 0.3);
+        }
+
+        .set-button:active {
+            transform: translateY(0);
+        }
+
+        .countdown-display {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .time-unit {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(66, 153, 225, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .time-unit:hover {
+            transform: translateY(-3px);
+        }
+
+        .time-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .time-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .instruction {
+            color: #718096;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .event-info {
+            background: rgba(66, 153, 225, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            color: #2d3748;
+            font-weight: 500;
+            display: none;
+        }
+
+        .success-message {
+            color: #38a169;
+            font-weight: bold;
+        }
+
+        @media (max-width: 640px) {
+            .countdown-container {
+                padding: 25px 20px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .datetime-section {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .datetime-input,
+            .set-button {
+                width: 100%;
+            }
+            
+            .countdown-display {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .time-number {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .countdown-display {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .time-unit {
+                padding: 15px 10px;
+            }
+            
+            .time-number {
+                font-size: 1.5rem;
+            }
+            
+            .time-label {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="demo-container">
-        <!-- Основной виджет с автоинициализацией -->
-        <div data-widget="countdown" data-options='{"locale":"en-GB","labels":{"days":"Days","hours":"Hours","minutes":"Minutes","seconds":"Seconds"},"doneText":"Event started!","showControls":true,"autoStart":true}'></div>
+    <div class="countdown-container">
+        <h1 class="title">🕒 Countdown Timer</h1>
         
-        <div class="footer">
-            <p>Perfect for events, launches, sales, and special occasions</p>
+        <div class="datetime-section">
+            <input type="datetime-local" id="eventDateTime" class="datetime-input" />
+            <button onclick="setEvent()" class="set-button">Set Event</button>
+        </div>
+        
+        <div class="countdown-display">
+            <div class="time-unit">
+                <span id="days" class="time-number">00</span>
+                <span class="time-label">Days</span>
+            </div>
+            <div class="time-unit">
+                <span id="hours" class="time-number">00</span>
+                <span class="time-label">Hours</span>
+            </div>
+            <div class="time-unit">
+                <span id="minutes" class="time-number">00</span>
+                <span class="time-label">Minutes</span>
+            </div>
+            <div class="time-unit">
+                <span id="seconds" class="time-number">00</span>
+                <span class="time-label">Seconds</span>
+            </div>
+        </div>
+        
+        <div class="instruction" id="instruction">
+            Set event date
+        </div>
+        
+        <div id="eventInfo" class="event-info">
+            <strong>Event:</strong> <span id="eventDetails"></span>
         </div>
     </div>
 
-    <script src="./dist/widget.min.js"></script>
+    <script>
+        let countdownInterval;
+        let targetDate = null;
+
+        // Initialize with saved date or default
+        function initializeDateTime() {
+            const saved = localStorage.getItem('countdownTarget');
+            if (saved) {
+                const savedDate = new Date(saved);
+                if (savedDate > new Date()) {
+                    document.getElementById('eventDateTime').value = saved;
+                    targetDate = savedDate;
+                    startCountdown();
+                    showEventInfo(savedDate);
+                    return;
+                }
+            }
+            
+            // Set default to tomorrow 10:00
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(10, 0, 0, 0);
+            
+            const defaultValue = tomorrow.toISOString().slice(0, 16);
+            document.getElementById('eventDateTime').value = defaultValue;
+        }
+
+        function setEvent() {
+            const input = document.getElementById('eventDateTime');
+            const dateTimeValue = input.value;
+            
+            if (!dateTimeValue) {
+                alert('Please select a date and time for your event!');
+                return;
+            }
+            
+            const selectedDate = new Date(dateTimeValue);
+            const now = new Date();
+            
+            if (selectedDate <= now) {
+                alert('Please select a future date and time!');
+                return;
+            }
+            
+            localStorage.setItem('countdownTarget', dateTimeValue);
+            
+            targetDate = selectedDate;
+            startCountdown();
+            showEventInfo(selectedDate);
+        }
+
+        function startCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            updateDisplay();
+            countdownInterval = setInterval(updateDisplay, 1000);
+        }
+
+        function updateDisplay() {
+            if (!targetDate) return;
+            
+            const now = new Date().getTime();
+            const distance = targetDate.getTime() - now;
+            
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById('days').textContent = '00';
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
+                
+                document.getElementById('instruction').innerHTML = 
+                    '<span class="success-message">🎉 Event has started!</span>';
+                return;
+            }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById('days').textContent = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        }
+
+        function showEventInfo(date) {
+            const eventInfo = document.getElementById('eventInfo');
+            const eventDetails = document.getElementById('eventDetails');
+            const instruction = document.getElementById('instruction');
+            
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            };
+            
+            eventDetails.textContent = date.toLocaleDateString('en-GB', options);
+            eventInfo.style.display = 'block';
+            instruction.textContent = 'Countdown is running...';
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initializeDateTime);
+    </script>
+
+    <!-- TF-Widgets Integration Script -->
+    <script src="https://scripts.tf-widgets.com/widget.js" data-id="testclient"></script>
 </body>
 </html>
