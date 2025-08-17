@@ -1,0 +1,22 @@
+{
+  "name": "tfwidgets/countdown-timer-widget",
+  "version": "1.0.0",
+  "description": "Customizable countdown timer widget",
+  "main": "dist/widget.min.js",
+  "scripts": {
+    "dev": "webpack --mode development --watch",
+    "build": "webpack --mode production",
+    "serve": "npx http-server examples -p 8080"
+  },
+  "keywords": ["widget", "countdown", "timer", "shopify"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "clean-webpack-plugin": "^4.0.0",
+    "css-loader": "^7.1.2",
+    "mini-css-extract-plugin": "^2.9.1",
+    "terser-webpack-plugin": "^5.3.10",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
