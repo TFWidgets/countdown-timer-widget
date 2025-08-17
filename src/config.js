@@ -8,5 +8,8 @@ export const defaultConfig = {
     seconds: 'Seconds'
   },
   doneText: 'Event started!',
-  autoStart: true
+  autoStart: true,
+  showControls: true,
+  titleSet: 'Event is set',
+  titleUnset: 'Set event date'
 };
