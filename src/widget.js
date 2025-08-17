@@ -1,26 +1,39 @@
-import './widget.css';
-import { defaultConfig } from './config';
+// widget.js (для прямого подключения через <script>)
 
-class CountdownWidget {
-  constructor(element, options = {}) {
+// Предположим, defaultConfig отдельно подключён или объявим здесь
+var defaultConfig = {
+  target: null,
+  autoStart: false,
+  doneText: 'Completed',
+  labels: {
+    days: 'Days',
+    hours: 'Hours',
+    minutes: 'Minutes',
+    seconds: 'Seconds'
+  }
+};
+
+(function(window, document) {
+
+  function CountdownWidget(element, options) {
     this.element = element;
-    this.config = { ...defaultConfig, ...options };
+    this.config = Object.assign({}, defaultConfig, options || {});
     this.timer = null;
     this.init();
   }
 
-  init() {
+  CountdownWidget.prototype.init = function() {
     this.render();
     this.bindEvents();
     if (this.config.autoStart && this.config.target) {
       this.start();
     }
-  }
+  };
 
-  render() {
+  CountdownWidget.prototype.render = function() {
     this.element.innerHTML = `
       <div class="countdown-controls">
-        <input type="datetime-local" class="countdown-input" id="eventDate-${this.id}">
+        <input type="datetime-local" class="countdown-input">
         <button class="countdown-button" data-action="set">Set Event</button>
       </div>
       <div class="countdown-widget">
@@ -41,98 +54,96 @@ class CountdownWidget {
           <div class="countdown-label">${this.config.labels.seconds}</div>
         </div>
       </div>
-      <div class="countdown-title" style="text-align: center; margin-top: 16px; font-weight: 500;">
+      <div class="countdown-title" style="text-align:center; margin-top:16px; font-weight:500;">
         ${this.config.target ? 'Event is set' : 'Please set event date'}
       </div>
     `;
-  }
+  };
 
-  bindEvents() {
-    const button = this.element.querySelector('[data-action="set"]');
-    const input = this.element.querySelector('.countdown-input');
-    
-    button.addEventListener('click', () => {
-      const date = input.value;
+  CountdownWidget.prototype.bindEvents = function() {
+    var button = this.element.querySelector('[data-action="set"]');
+    var input = this.element.querySelector('.countdown-input');
+    var self = this;
+
+    button.addEventListener('click', function() {
+      var date = input.value;
       if (date) {
-        this.setTarget(date);
-        this.start();
+        self.setTarget(date);
+        self.start();
       } else {
         alert('Please choose a date');
       }
     });
-  }
+  };
 
-  setTarget(target) {
+  CountdownWidget.prototype.setTarget = function(target) {
     this.config.target = target;
-    const title = this.element.querySelector('.countdown-title');
-    title.textContent = `Event: ${new Date(target).toLocaleString('en')}`;
-  }
+    var title = this.element.querySelector('.countdown-title');
+    title.textContent = 'Event: ' + new Date(target).toLocaleString('en');
+  };
 
-  start() {
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
+  CountdownWidget.prototype.start = function() {
+    var self = this;
 
-    const targetTime = new Date(this.config.target).getTime();
-    
-    this.timer = setInterval(() => {
-      const now = Date.now();
-      const distance = targetTime - now;
+    if (this.timer) clearInterval(this.timer);
+
+    var targetTime = new Date(this.config.target).getTime();
+
+    this.timer = setInterval(function() {
+      var now = Date.now();
+      var distance = targetTime - now;
 
       if (distance < 0) {
-        this.complete();
+        self.complete();
         return;
       }
 
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      var days = Math.floor(distance / (1000*60*60*24));
+      var hours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+      var minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
+      var seconds = Math.floor((distance % (1000*60)) / 1000);
 
-      this.updateDisplay({ days, hours, minutes, seconds });
+      self.updateDisplay({days, hours, minutes, seconds});
     }, 1000);
-  }
+  };
 
-  updateDisplay({ days, hours, minutes, seconds }) {
-    const pad = (num) => String(num).padStart(2, '0');
-    
-    this.element.querySelector('[data-unit="days"]').textContent = pad(days);
-    this.element.querySelector('[data-unit="hours"]').textContent = pad(hours);
-    this.element.querySelector('[data-unit="minutes"]').textContent = pad(minutes);
-    this.element.querySelector('[data-unit="seconds"]').textContent = pad(seconds);
-  }
+  CountdownWidget.prototype.updateDisplay = function(t) {
+    function pad(n) { return String(n).padStart(2,'0'); }
 
-  complete() {
+    this.element.querySelector('[data-unit="days"]').textContent = pad(t.days);
+    this.element.querySelector('[data-unit="hours"]').textContent = pad(t.hours);
+    this.element.querySelector('[data-unit="minutes"]').textContent = pad(t.minutes);
+    this.element.querySelector('[data-unit="seconds"]').textContent = pad(t.seconds);
+  };
+
+  CountdownWidget.prototype.complete = function() {
     clearInterval(this.timer);
     this.element.querySelector('.countdown-title').textContent = this.config.doneText || 'Completed';
-    this.updateDisplay({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+    this.updateDisplay({days:0,hours:0,minutes:0,seconds:0});
+  };
+
+  CountdownWidget.prototype.destroy = function() {
+    if (this.timer) clearInterval(this.timer);
+  };
+
+  function init(selector, options) {
+    var elements = typeof selector === 'string' ? document.querySelectorAll(selector) : [selector];
+    return Array.from(elements).map(function(el) { return new CountdownWidget(el, options); });
   }
 
-  destroy() {
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
-  }
-}
-
-function init(selector, options = {}) {
-  const elements = typeof selector === 'string' 
-    ? document.querySelectorAll(selector)
-    : [selector];
-  
-  return Array.from(elements).map(el => new CountdownWidget(el, options));
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const elements = document.querySelectorAll('[data-widget="countdown"]');
-  elements.forEach(el => {
-    const options = el.dataset.options ? JSON.parse(el.dataset.options) : {};
-    new CountdownWidget(el, options);
+  // Автоинициализация
+  document.addEventListener('DOMContentLoaded', function() {
+    var elements = document.querySelectorAll('[data-widget="countdown"]');
+    elements.forEach(function(el) {
+      var options = el.dataset.options ? JSON.parse(el.dataset.options) : {};
+      new CountdownWidget(el, options);
+    });
   });
-});
 
-if (typeof window !== 'undefined') {
-  window.CountdownWidget = { init, CountdownWidget };
-}
+  // Глобальный объект
+  window.CountdownWidget = {
+    CountdownWidget: CountdownWidget,
+    init: init
+  };
 
-export { init, CountdownWidget };
+})(window, document);
