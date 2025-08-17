@@ -3,24 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Countdown Timer Widget Demo</title>
-    <link rel="stylesheet" href="../dist/widget.min.css">
+    <title>Countdown Timer Widget</title>
+    <link rel="stylesheet" href="./dist/widget.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .demo-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .timer-section {
+            margin: 30px 0;
+        }
+    </style>
 </head>
 <body>
-    <div style="max-width: 600px; margin: 50px auto; padding: 20px;">
-        <h1>Demo: Countdown Timer</h1>
+    <div class="demo-container">
+        <h1>Countdown Timer Widget</h1>
         
-        <!-- Auto-initialization -->
-        <div data-widget="countdown" data-options='{"target":"2025-12-31T23:59:59", "labels":{"days":"Days","hours":"Hours","minutes":"Minutes","seconds":"Seconds"}, "doneText":"Completed"}'></div>
+        <div class="timer-section">
+            <h3>Auto initialization</h3>
+            <div data-widget="countdown" data-options='{"target":"2025-12-31T23:59:59", "labels":{"days":"Days","hours":"Hours","minutes":"Minutes","seconds":"Seconds"}, "doneText":"Completed"}'></div>
+        </div>
         
-        <!-- Programmatic initialization -->
-        <div id="manual-countdown" style="margin-top: 40px;"></div>
+        <div class="timer-section">
+            <h3>Programmatic initialization</h3>
+            <div id="countdown-widget"></div>
+        </div>
     </div>
 
-    <script src="../dist/widget.min.js"></script>
+    <script src="./dist/widget.min.js"></script>
     <script>
         // Programmatic initialization
-        CountdownWidget.init('#manual-countdown', {
+        CountdownWidget.init('#countdown-widget', {
             target: '2025-06-01T12:00:00',
             labels: {
                 days: 'Days',
@@ -33,4 +56,3 @@
     </script>
 </body>
 </html>
-
