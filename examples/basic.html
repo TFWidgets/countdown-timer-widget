@@ -1,14 +1,35 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>countdown timer</title>
-    <link rel="stylesheet" href="../src/widget.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer Widget Demo</title>
+    <link rel="stylesheet" href="../dist/widget.min.css">
 </head>
 <body>
-    <h1 style="text-align:center;">time to....:</h1>
-    <div id="countdown"></div>
+    <div style="max-width: 600px; margin: 50px auto; padding: 20px;">
+        <h1>Demo: Countdown Timer</h1>
+        
+        <!-- Auto-initialization -->
+        <div data-widget="countdown" data-options='{"target":"2025-12-31T23:59:59", "labels":{"days":"Days","hours":"Hours","minutes":"Minutes","seconds":"Seconds"}, "doneText":"Completed"}'></div>
+        
+        <!-- Programmatic initialization -->
+        <div id="manual-countdown" style="margin-top: 40px;"></div>
+    </div>
 
-    <script src="../src/widget.js"></script>
+    <script src="../dist/widget.min.js"></script>
+    <script>
+        // Programmatic initialization
+        CountdownWidget.init('#manual-countdown', {
+            target: '2025-06-01T12:00:00',
+            labels: {
+                days: 'Days',
+                hours: 'Hours',
+                minutes: 'Minutes', 
+                seconds: 'Seconds'
+            },
+            doneText: 'Completed'
+        });
+    </script>
 </body>
 </html>
