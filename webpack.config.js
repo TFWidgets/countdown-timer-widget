@@ -4,10 +4,14 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
-  entry: './src/widget.js',
+  mode: 'production',
+  entry: {
+    'widget.min': './src/widget.js',
+    'embed': './embed.js'
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'widget.min.js',
+    filename: '[name].js',
     library: 'Widget',
     libraryTarget: 'umd',
     umdNamedDefine: true,
@@ -18,6 +22,16 @@ module.exports = {
       {
         test: /\.css$/i,
         use: [MiniCssExtractPlugin.loader, 'css-loader']
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        }
       }
     ]
   },
