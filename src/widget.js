@@ -1,4 +1,4 @@
-// widget.js (для прямого подключения через <script>)
+// widget.js
 
 var defaultConfig = {
   locale: 'en-GB',
@@ -172,9 +172,33 @@ var defaultConfig = {
     });
   });
 
+  // старый экспорт
   window.CountdownWidget = {
     CountdownWidget: CountdownWidget,
     init: init
   };
 
 })(window, document);
+
+
+// --- Глобальный экспорт ---
+(function() {
+    function TFCountdownWidget(container, config) {
+        const element = typeof container === 'string'
+            ? document.querySelector(container)
+            : container;
+
+        if (!element) {
+            console.error('TFCountdownWidget: Container not found');
+            return;
+        }
+
+        const finalConfig = Object.assign({}, defaultConfig, config);
+
+        // используем твой CountdownWidget
+        return new CountdownWidget(element, finalConfig);
+    }
+
+    window.TFCountdownWidget = TFCountdownWidget;
+    window.initTFCountdown = TFCountdownWidget; // алиас
+})();
